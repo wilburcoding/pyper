@@ -4,22 +4,32 @@ root = tk.Tk()
 root.title("Simple Tkinter GUI")
 root.geometry("500x500")
 
-# Top bar frame thingy
-tbar = tk.Frame(root, background="white", height=40,width=500)
-tbar.pack_propagate(False) 
-tbar.pack()
+
 name = tk.StringVar()
 
-label = tk.Label(tbar, text="Pyper v0.3", background="white", font=("Arial", 20))
-label.pack(side="left")
-name_bar = tk.Frame(root, background="lightgray", height=40, width=500)
-name_bar.pack_propagate(False)
-name_bar.pack()
-dnamelabel = tk.Label(name_bar, text="Display Name: ",
-                 background="lightgray", font=("Arial", 12))
-dnamelabel.pack(side="left")
-name_entry = tk.Entry(name_bar, textvariable=name,
-                      font=('Arial', 12))
-name_entry.place(relx=0.7, rely=0.5, anchor="center")
+
+
+
+maincontent = tk.Frame(root, background="white", height=500, width=500)
+maincontent.pack_propagate(False)
+maincontent.pack()
+title = tk.Label(maincontent, text="Pyper v0.3",
+                 background="white", font=("Arial", 35))
+title.place(relx=0.5, rely=0.13, anchor="center")
+name_entry = tk.Entry(maincontent, textvariable=name,
+                      font=('Arial', 15), borderwidth=2)
+name_entry.insert(0, 'Guest')
+
+name_entry.place(relx=0.5, rely=0.23, anchor="center")
+
+practice = tk.Button(maincontent, text="Practice",
+                     background="lightgray", font=("Arial", 16))
+practice.place(relx=0.5, rely=0.32, anchor="center", width=180, height=40)
+compete = tk.Button(maincontent, text="Compete",
+                     background="lightgray", font=("Arial", 16))
+compete.place(relx=0.5, rely=0.41, anchor="center", width=180, height=40)
+leaderboard = tk.Button(maincontent, text="Leaderboard",
+                    background="lightgray", font=("Arial", 16))
+leaderboard.place(relx=0.5, rely=0.50, anchor="center", width=180, height=40)
 # Run the application
 root.mainloop()
