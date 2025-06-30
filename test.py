@@ -15,7 +15,6 @@ def clear():
 
 
 with open('words.txt', 'r') as file:
-    # Iterate over each line in the file object
     for line in file:
         processed_line = line.strip()
         if (len(processed_line) > 2 and "'" not in processed_line):
