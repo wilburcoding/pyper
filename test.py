@@ -24,11 +24,12 @@ pressed = []
 state = 1
 
 
+
 def on_press(key):
     clear()
     print("".join(chars))
     print("".join(pressed))
-    if (key == Key.esc):
+    if (key == keys.esc):
         print("Escape")
         return False
     pressed.append(str(key))
@@ -64,7 +65,8 @@ while True:
             st = datetime.now()
 
     if (key == keys.ENTER):
-        print()
+        print(grouping)
+
         wpmda = ([60/((int(x.microseconds) + int(x.seconds) * 1000000) /
               1000000) * (len(grouping[times.index(x)])/5) for x in times])
         print(textgraph.vertical(wpmda))
