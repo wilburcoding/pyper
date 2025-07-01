@@ -33,7 +33,11 @@ def handle_enter(e):
     wpms = [60/((int(x.microseconds) + int(x.seconds) * 1000000) /
                 1000000) * (2/5) for x in grouping.values()]
     print(wpms)
-    print(pressed)
+    words.config(text="Practice Results")
+    words.config(font=('Arial', 26))
+    words.place(relx=0.5, rely=0.09, anchor="center", width=300)
+    typeentry.place(relx=0.5, rely=0.25, anchor="center",
+                    width=300, height=100)
 
 
 
@@ -53,11 +57,10 @@ def handle_change(e):
     val = str(e.keysym) # get the last character typed
     if (val == "space"):
         val=" "
-    print(val)
-    print(pressed)
-    print(ranlets[len(pressed)])
-    
+    if (len(pressed) >= len(ranlets)):
+        return
     if (val == ranlets[len(pressed)]):
+        typeentry.config(fg="black")
         pressed.append(val)
         cgcount += 1
         cgroup+=val
@@ -70,8 +73,8 @@ def handle_change(e):
             typeentry.delete('1.0', tk.END)
             typeentry.insert('1.0', "".join(pressed))
             handle_enter(None)
-
-
+    else:
+        typeentry.config(fg="red")
 
 def open_practice():
     global ranlets
@@ -83,6 +86,12 @@ def open_practice():
     typeentry.config(bg="lightgray")
     counter = 5
     ranwords = [random.choice(wlist) for i in range(int(wlselected.get()[0:2]))]
+    if (wlselected.get()[0:2] == "50"):
+        words.config(font=('Arial', 12))
+    elif (wlselected.get()[0:2] == "25"):
+        words.config(font=('Arial', 14))
+    elif (wlselected.get()[0:2] == "15"):
+        words.config(font=('Arial', 16))
     ranlets = list(" ".join(ranwords))
     words.config(text=" ".join(ranwords))
     print(ranlets)
