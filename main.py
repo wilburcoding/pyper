@@ -20,8 +20,17 @@ typeval = tk.StringVar()
 
 def raise_frame(frame):
     frame.tkraise()
-
-
+slist = []
+def return_home_from_practice():
+    #coming from practice
+    practicecontent.config(height=500, width=500)
+    root.geometry("500x500")
+    raise_frame(maincontent)
+    words.place(relx=0.5, rely=0.24, anchor="center", width=300)
+    typeentry.place(relx=0.5, rely=0.51, anchor="center", width=300, height=100)
+    slist[0].get_tk_widget().destroy()
+    for i in range(1, len(slist)):
+        slist[i].destroy()
 counter = 5
 start = datetime.now()
 grouping = {}
@@ -32,6 +41,7 @@ ltime = datetime.now()
 
 def handle_enter(e):
     global pressed
+    global slist
     print(pressed)
     print(grouping)
     typeentry.config(state=tk.DISABLED)
@@ -40,6 +50,8 @@ def handle_enter(e):
     wpms = [60/((int(x.microseconds) + int(x.seconds) * 1000000) /
                 1000000) * (2/5) for x in grouping.values()]
     print(wpms)
+    practicecontent.config(height=500, width=1000)
+    root.geometry("1000x500")
     words.config(text="Practice Results")
     words.config(font=('Arial', 26))
     words.place(relx=0.25, rely=0.05, anchor="center", width=300)
@@ -54,6 +66,7 @@ def handle_enter(e):
     canvas.draw()
     canvas.get_tk_widget().place(relx=0.25, rely=0.62, anchor="center",
                                  width=450, height=250)
+    slist.append(canvas)
     diff = datetime.now() - start
     wpmfull = (60/((int(diff.microseconds) + int(diff.seconds) * 1000000) /
                    1000000)) * (len(pressed)/5)
@@ -66,10 +79,12 @@ def handle_enter(e):
     bursts = [x for x in wpms if x >= (1.25 * (sum(wpms)/len(wpms)))]
     addinfo = tk.Label(practicecontent, text=f"Max burst wpm:{round(max(wpms),2)}\nAverage burst wpm:{round(sum(bursts)/len(bursts),2)}",
                        background="white", font=("Arial", 18), wraplength=500, justify="left")
-    addinfo.place(relx=0.75, rely=0.35, anchor="center", width=400)
-    btitle = tk.Label(practicecontent, text="Best Letters",
+    addinfo.place(relx=0.75, rely=0.15, anchor="center", width=400)
+    btitle = tk.Label(practicecontent, text="Worst Letters",
                       background="white", font=("Arial", 18, "bold"), wraplength=500, justify="left")
-    btitle.place(relx=0.75, rely=0.45, anchor="n", width=400)
+    btitle.place(relx=0.75, rely=0.23, anchor="n", width=400)
+
+
     bestletters = {}
     for k, v in grouping.items():
         for let in list(k):
@@ -85,12 +100,37 @@ def handle_enter(e):
     t = ""
     for i in range(4):
         avg = sum(list(bestletters.values())[i])/len(list(bestletters.values())[i])
-        t += list(bestletters.keys())[i] + " - " + str(60 /
-                                                 (avg) * (2/5)) + " wpm avg\n"
+        t += list(bestletters.keys())[i] + " - " + str(round(60 /
+                                                 (avg) * (2/5),2)) + " wpm avg\n"
     blets = tk.Label(practicecontent, text=t,
                           background="white", font=("Arial", 16), wraplength=500, justify="left")
-    blets.place(relx=0.75, rely=0.45, anchor="n", width=400)
+    blets.place(relx=0.75, rely=0.30, anchor="n", width=400)
+    wtitle = tk.Label(practicecontent, text="Best Letters",
+                      background="white", font=("Arial", 18, "bold"), wraplength=500, justify="left")
+    wtitle.place(relx=0.75, rely=0.51, anchor="n", width=400)
+    bestletters["\" \""] = bestletters[" "]
+    del bestletters[" "]
+    worstletters = {k: v for k, v in sorted(bestletters.items(
+    ), key=lambda item: (sum(item[1])/len(item[1])))}
+    t = ""
+    for i in range(4):
+        avg = sum(list(worstletters.values())[
+                  i])/len(list(worstletters.values())[i])
+        t += list(worstletters.keys())[i] + " - " + str(round(60 / (avg) * (2/5), 2)) + " wpm avg\n"
+    wlets = tk.Label(practicecontent, text=t,
+                     background="white", font=("Arial", 16), wraplength=500, justify="left")
+    wlets.place(relx=0.75, rely=0.58, anchor="n", width=400)
+    returnh = tk.Button(practicecontent, text="Return",
+                         background="lightgray", font=("Arial", 16), command=return_home_from_practice)
 
+    returnh.place(relx=0.75, rely=0.89, anchor="center", width=180, height=40)
+    slist.append(btitle)
+    slist.append(addinfo)
+    slist.append(wpmlabel)
+    slist.append(blets)
+    slist.append(wtitle)
+    slist.append(wlets)
+    slist.append(returnh)
 
 def handle_change(e):
 
@@ -143,6 +183,8 @@ def open_practice():
         words.config(font=('Arial', 14))
     elif (wlselected.get()[0:2] == "15"):
         words.config(font=('Arial', 16))
+    else:
+        words.config(font=('Arial', 20))
     ranlets = list(" ".join(ranwords))
     words.config(text=" ".join(ranwords))
     print(ranlets)
