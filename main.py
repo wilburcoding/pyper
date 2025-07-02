@@ -1,6 +1,9 @@
 import tkinter as tk
 import random
 import threading
+import uuid
+import socket
+import json
 from datetime import datetime
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -13,16 +16,22 @@ with open('words.txt', 'r') as file:
 root = tk.Tk()
 root.title("Simple Tkinter GUI")
 root.geometry("500x500")
+clets = []
 ranlets = []
 pressed = []
+copen = False
 name = tk.StringVar()
 typeval = tk.StringVar()
 
 
 def raise_frame(frame):
     frame.tkraise()
+
+
 slist = []
-def return_home_from_practice(): # coming from practice ONLY -> may have to adjust to accept returning events from other places idk 
+
+
+def return_home_from_practice():  # coming from practice ONLY -> may have to adjust to accept returning events from other places idk
     global pressed
     global grouping
     global cgroup
@@ -33,21 +42,83 @@ def return_home_from_practice(): # coming from practice ONLY -> may have to adju
     root.geometry("500x500")
     raise_frame(maincontent)
     words.place(relx=0.5, rely=0.24, anchor="center", width=300)
-    typeentry.place(relx=0.5, rely=0.51, anchor="center", width=300, height=100)
+    typeentry.place(relx=0.5, rely=0.51, anchor="center",
+                    width=300, height=100)
     slist[0].get_tk_widget().destroy()
     for i in range(1, len(slist)):
         slist[i].destroy()
-    pressed = [] #i think i needt his idk tho
+    pressed = []  # i think i needt his idk tho
     grouping = {}
     counter = 5
     cgroup = ""
     cgcount = 0
+
+
 counter = 5
 start = datetime.now()
 grouping = {}
 cgroup = ""
 cgcount = 0
 ltime = datetime.now()
+
+
+def return_home_from_compete():
+    global pressed
+    global centry
+    pressed = []  # coming from compete ONLY
+    finalres.place_forget()
+    returnc.place_forget()
+    raise_frame(maincontent)
+    cwords.place(relx=0.5, rely=0.24, anchor="center", width=300)
+    cwords.config(text="Connecting to server...")
+    cwords.config(font=('Arial', 15), wraplength=300)
+
+    centry.place(relx=0.5, rely=0.51, anchor="center", width=300, height=100)
+    centry.config(font=('Arial', 15))
+    typeentry.config(state=tk.NORMAL)
+    typeentry.delete('1.0', tk.END)
+    typeentry.config(state=tk.DISABLED)
+
+
+def handle_cchange(e):
+    global pressed
+    global centry
+    global clets
+
+    if (str(centry.get("end-1c")) != "".join(pressed)):
+        centry.delete('1.0', tk.END)
+        centry.insert('1.0', "".join(pressed))
+    val = str(e.keysym)  # get the last character typed
+    if (val == "space"):
+        val = " "
+    if (len(pressed) >= len(clets)):
+        return
+    if (val == clets[len(pressed)]):
+        centry.config(fg="black")
+        pressed.append(val)
+        if (len(pressed) == len(clets)):
+            centry.delete('1.0', tk.END)
+            centry.insert('1.0', "".join(pressed))
+            handle_center(None)
+    else:
+        centry.config(fg="red")
+
+
+def handle_center(e):
+    diff = datetime.now() - start
+    wpmfull = (60/((int(diff.microseconds) + int(diff.seconds) * 1000000) /
+                   1000000)) * (len(pressed)/5)
+    s.sendall(json.dumps({"type": "res", "id": str(uuid.uuid4()), "name": str(
+        name.get()), "speed": round(wpmfull, 2)}).encode())
+    centry.config(state=tk.DISABLED)
+    centry.config(bg="lightgray")
+    cwords.config(text="Waiting for Results...")
+    cwords.config(font=('Arial', 25), wraplength=400)
+    cwords.place(relx=0.5, rely=0.10, anchor="center", width=400)
+    centry.place(relx=0.5, rely=0.25, anchor="center",
+                 width=300, height=100)
+    finalres.place(relx=0.5, rely=0.40, anchor="n", width=400)
+    returnc.place(relx=0.5, rely=0.89, anchor="center", width=180, height=40)
 
 
 def handle_enter(e):
@@ -95,7 +166,6 @@ def handle_enter(e):
                       background="white", font=("Arial", 18, "bold"), wraplength=500, justify="left")
     btitle.place(relx=0.75, rely=0.23, anchor="n", width=400)
 
-
     bestletters = {}
     for k, v in grouping.items():
         for let in list(k):
@@ -110,11 +180,12 @@ def handle_enter(e):
     ), key=lambda item: (sum(item[1])/len(item[1])), reverse=True)}
     t = ""
     for i in range(4):
-        avg = sum(list(bestletters.values())[i])/len(list(bestletters.values())[i])
+        avg = sum(list(bestletters.values())[
+                  i])/len(list(bestletters.values())[i])
         t += list(bestletters.keys())[i] + " - " + str(round(60 /
-                                                 (avg) * (2/5),2)) + " wpm avg\n"
+                                                             (avg) * (2/5), 2)) + " wpm avg\n"
     blets = tk.Label(practicecontent, text=t,
-                          background="white", font=("Arial", 16), wraplength=500, justify="left")
+                     background="white", font=("Arial", 16), wraplength=500, justify="left")
     blets.place(relx=0.75, rely=0.30, anchor="n", width=400)
     wtitle = tk.Label(practicecontent, text="Best Letters",
                       background="white", font=("Arial", 18, "bold"), wraplength=500, justify="left")
@@ -127,14 +198,16 @@ def handle_enter(e):
     for i in range(4):
         avg = sum(list(worstletters.values())[
                   i])/len(list(worstletters.values())[i])
-        t += list(worstletters.keys())[i] + " - " + str(round(60 / (avg) * (2/5), 2)) + " wpm avg\n"
+        t += list(worstletters.keys())[i] + " - " + \
+            str(round(60 / (avg) * (2/5), 2)) + " wpm avg\n"
     wlets = tk.Label(practicecontent, text=t,
                      background="white", font=("Arial", 16), wraplength=500, justify="left")
     wlets.place(relx=0.75, rely=0.58, anchor="n", width=400)
     returnh = tk.Button(practicecontent, text="Return",
-                         background="lightgray", font=("Arial", 16), command=return_home_from_practice)
+                        background="lightgray", font=("Arial", 16), command=return_home_from_practice)
 
     returnh.place(relx=0.75, rely=0.89, anchor="center", width=180, height=40)
+
     slist.append(btitle)
     slist.append(addinfo)
     slist.append(wpmlabel)
@@ -142,6 +215,7 @@ def handle_enter(e):
     slist.append(wtitle)
     slist.append(wlets)
     slist.append(returnh)
+
 
 def handle_change(e):
 
@@ -179,8 +253,14 @@ def handle_change(e):
 
 
 def open_compete():
+    global copen
+    global pressed
+    pressed = []
+    copen = True
+    s.sendall(json.dumps({"type": "join"}).encode())
     centry.config(bg="lightgray")
     raise_frame(competecontent)
+
 
 def open_practice():
     global ranlets
@@ -234,23 +314,31 @@ def start_practice():
         typeentry.after(1000, record)
     record()
 
+
 competecontent = tk.Frame(root, background="white", height=500, width=500)
 competecontent.pack_propagate(False)
 competecontent.pack()
 competecontent.place(x=0, y=0)
 cwords = tk.Label(competecontent, text="Connecting to server...",
-                 background="white", font=("Arial", 20), wraplength=300)
+                  background="white", font=("Arial", 20), wraplength=300)
 cwords.place(relx=0.5, rely=0.24, anchor="center", width=300)
 centry = tk.Text(competecontent,
-                    font=('Arial', 15), borderwidth=2)
+                 font=('Arial', 15), borderwidth=2)
 centry.place(relx=0.5, rely=0.51, anchor="center", width=300, height=100)
 centry.config(state="disabled", wrap="word")
 centry.bind('<Control-v>', lambda _: 'break')
 centry.bind('<Control-c>', lambda _: 'break')
 centry.bind('<BackSpace>', lambda _: 'break')
-centry.bind('<KeyPress>', handle_change)
+centry.bind('<KeyPress>', handle_cchange)
+finalres = tk.Label(competecontent, text="",
+                    background="white", font=("Arial", 18), wraplength=500, justify="left")
+finalres.place(relx=0.5, rely=0.40, anchor="n", width=400)
+returnc = tk.Button(competecontent, text="Return",
+                    background="lightgray", font=("Arial", 16), command=return_home_from_compete)
 
-
+returnc.place(relx=0.5, rely=0.89, anchor="center", width=180, height=40)
+returnc.place_forget()
+finalres.place_forget()
 practicecontent = tk.Frame(root, background="white", height=500, width=500)
 root.resizable(False, False)
 practicecontent.pack_propagate(False)
@@ -297,10 +385,62 @@ practice = tk.Button(maincontent, text="Practice",
                      background="lightgray", font=("Arial", 16), command=open_practice)
 practice.place(relx=0.5, rely=0.44, anchor="center", width=180, height=40)
 compete = tk.Button(maincontent, text="Compete",
-                    background="lightgray", font=("Arial", 16),command=open_compete)
+                    background="lightgray", font=("Arial", 16), command=open_compete)
 compete.place(relx=0.5, rely=0.53, anchor="center", width=180, height=40)
 leaderboard = tk.Button(maincontent, text="Leaderboard",
                         background="lightgray", font=("Arial", 16))
 leaderboard.place(relx=0.5, rely=0.62, anchor="center", width=180, height=40)
 # Run the application
+HOST = "127.0.0.1"
+PORT = 56726
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((HOST, PORT))
+
+
+def manage():
+    global start
+    global clets
+    global copen
+    # manage client side stuff
+    while True:
+        data = s.recv(1024)
+        print(f"Received {data!r}")
+        dat = json.loads(data.decode())
+        if (copen == True):
+            # only actually do stuff if the competing menu is open
+            if (dat["state"] == "ongoing"):
+                centry.delete('1.0', tk.END)
+                returnc.place(relx=0.5, rely=0.89,
+                              anchor="center", width=180, height=40)
+                cwords.config(
+                    text="A game is ongoing - please try again later")
+                copen = False
+            elif (dat["state"] == "countdown"):
+                returnc.place_forget()
+                cwords.config(
+                    text=str(dat["words"]))
+                centry.config(state=tk.NORMAL)
+                centry.delete('1.0', tk.END)
+                centry.insert('1.0', "Starting in " + str(dat["countdown"]))
+                clets = list(str(dat["words"]))
+                centry.config(state=tk.DISABLED)
+            elif (dat["state"] == "play" and dat["countdown"] == 60):
+                centry.config(bg="white")
+                centry.config(state=tk.NORMAL)
+                centry.delete('1.0', tk.END)
+                start = datetime.now()
+            elif (dat["state"] == "results"):
+                cwords.config(text="Final Results")
+                rest = ""
+                for key in dat["results"].keys():
+                    rest += dat["results"][key]["name"] + ": " + \
+                        str(dat["results"][key]["speed"]) + " wpm\n"
+                finalres.config(text=rest)
+                copen = False
+            pass
+
+
+threading.Thread(target=manage, daemon=True).start()
+
 root.mainloop()

@@ -34,7 +34,7 @@ def handle_client(conn, addr):
                 game["results"][jdat["id"]] = {"speed":jdat["speed"], "name":jdat["name"]}
                 pass
             else:
-                conn.sendall(json.dumps({"type":"ongoing"}).encode())
+                conn.sendall(json.dumps({"state":"ongoing"}).encode())
 def start_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
@@ -67,10 +67,10 @@ def manage():
             else:
               countdown-=1
         elif (game["state"] == "play"):
-            if (countdown == 0 or len(list(game["results"].keys())) == len(conns)):
+            if (countdown == 0 or len(list(game["results"].keys())) == len(conns) or len(conns) == 0):
                 print("Game over with results: " + str(game["results"]))
                 game["state"] = "results"
-                countdown = 15
+                countdown = 5
             else:
               if (countdown % 15 == 0):
                   print("Countdown: " + str(countdown))
@@ -82,8 +82,12 @@ def manage():
             else:
                 countdown-=1
         game["countdown"] = countdown
-        for conn in conns:
-            conn.sendall(json.dumps(game).encode())
+        for conn in conns[:]: 
+          try:
+              conn.sendall(json.dumps(game).encode())
+          except Exception as e:
+              print(e)
+              conns.remove(conn)
         time.sleep(1)
 
 threading.Thread(target=manage, daemon=True).start()
