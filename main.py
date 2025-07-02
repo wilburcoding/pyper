@@ -21,8 +21,13 @@ typeval = tk.StringVar()
 def raise_frame(frame):
     frame.tkraise()
 slist = []
-def return_home_from_practice():
-    #coming from practice
+def return_home_from_practice(): # coming from practice ONLY -> may have to adjust to accept returning events from other places idk 
+    global pressed
+    global grouping
+    global cgroup
+    global cgcount
+    global counter
+
     practicecontent.config(height=500, width=500)
     root.geometry("500x500")
     raise_frame(maincontent)
@@ -31,6 +36,11 @@ def return_home_from_practice():
     slist[0].get_tk_widget().destroy()
     for i in range(1, len(slist)):
         slist[i].destroy()
+    pressed = [] #i think i needt his idk tho
+    grouping = {}
+    counter = 5
+    cgroup = ""
+    cgcount = 0
 counter = 5
 start = datetime.now()
 grouping = {}
