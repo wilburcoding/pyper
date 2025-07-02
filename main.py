@@ -29,7 +29,8 @@ def raise_frame(frame):
 
 
 slist = []
-
+def return_home_from_leaderboard():  # coming from leaderboard
+    raise_frame(maincontent)
 
 def return_home_from_practice():  # coming from practice ONLY -> may have to adjust to accept returning events from other places idk
     global pressed
@@ -75,9 +76,9 @@ def return_home_from_compete():
 
     centry.place(relx=0.5, rely=0.51, anchor="center", width=300, height=100)
     centry.config(font=('Arial', 15))
-    typeentry.config(state=tk.NORMAL)
-    typeentry.delete('1.0', tk.END)
-    typeentry.config(state=tk.DISABLED)
+    centry.config(state=tk.NORMAL)
+    centry.delete('1.0', tk.END)
+    centry.config(state=tk.DISABLED)
 
 
 def handle_cchange(e):
@@ -305,7 +306,9 @@ def open_practice():
             typeentry.after(1000, count)
     count()
 
-
+def open_leaderboard():
+    raise_frame(lcontent)
+    s.sendall(json.dumps({"type": "leaderboard"}).encode())
 def start_practice():
     # Record new value of text widget every 100 milliseconds and save to grouping
     def record():
@@ -315,6 +318,20 @@ def start_practice():
     record()
 
 
+lcontent = tk.Frame(root, background="white", height=500, width=500)
+lcontent.pack_propagate(False)
+lcontent.pack()
+lcontent.place(x=0, y=0)
+cwords = tk.Label(lcontent, text="Leaderboard",
+                  background="white", font=("Arial", 26), wraplength=400)
+cwords.place(relx=0.5, rely=0.24, anchor="center", width=400)
+leaderboardtext = tk.Label(lcontent, text="e:125\n3:125\b12fh921h\n124325",
+                  background="white", font=("Arial", 20), wraplength=400)
+leaderboardtext.place(relx=0.5, rely=0.50, anchor="n", width=400)
+returnl = tk.Button(lcontent, text="Return",
+                    background="lightgray", font=("Arial", 16), command=return_home_from_leaderboard)
+
+returnl.place(relx=0.5, rely=0.89, anchor="center", width=180, height=40)
 competecontent = tk.Frame(root, background="white", height=500, width=500)
 competecontent.pack_propagate(False)
 competecontent.pack()
@@ -388,7 +405,7 @@ compete = tk.Button(maincontent, text="Compete",
                     background="lightgray", font=("Arial", 16), command=open_compete)
 compete.place(relx=0.5, rely=0.53, anchor="center", width=180, height=40)
 leaderboard = tk.Button(maincontent, text="Leaderboard",
-                        background="lightgray", font=("Arial", 16))
+                        background="lightgray", font=("Arial", 16), command=open_leaderboard)
 leaderboard.place(relx=0.5, rely=0.62, anchor="center", width=180, height=40)
 # Run the application
 HOST = "127.0.0.1"
@@ -407,6 +424,11 @@ def manage():
         data = s.recv(1024)
         print(f"Received {data!r}")
         dat = json.loads(data.decode())
+        if (dat["state"] == "l"):
+            ldat = ""
+            for i in list(dat["leaderboard"].keys()):
+                ldat += i + ": " + str(dat["leaderboard"][i]) + " wpm\n"
+            leaderboardtext.config(text=ldat)
         if (copen == True):
             # only actually do stuff if the competing menu is open
             if (dat["state"] == "ongoing"):

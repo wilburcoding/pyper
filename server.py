@@ -4,6 +4,7 @@ import json
 import threading
 import time
 import random
+leaderboard = {}
 wlist = []
 with open('words.txt', 'r') as file:
     for line in file:
@@ -16,6 +17,7 @@ game = {"state":"wait", "results":{}, "words":"","countdown":0}
 conns = []
 countdown = 15
 def handle_client(conn, addr):
+    global leaderboard
     print(f"Connected by {addr}")
     with conn:
         while True:
@@ -31,8 +33,21 @@ def handle_client(conn, addr):
               pass
             elif (jdat["type"] == "res"):
                 # game result
+                jdat["speed"] = int(jdat["speed"])
                 game["results"][jdat["id"]] = {"speed":jdat["speed"], "name":jdat["name"]}
+                if (jdat["name"] in list(leaderboard.keys())):
+                    if (jdat["speed"] > leaderboard[jdat["name"]]):
+                        leaderboard[jdat["name"]] = jdat["speed"]
+                else:
+                    leaderboard[jdat["name"]] = jdat["speed"]
                 pass
+            elif (jdat["type"] == "leaderboard"):
+                sorted_l = sorted(
+                    leaderboard.items(), key=lambda item: item[1], reverse=True)
+                sorted_l_dict = dict(sorted_l)
+                #get only first 5 items
+                leaderboard = dict(list(sorted_l_dict.items())[:5])
+                conn.sendall(json.dumps({"leaderboard":leaderboard,"state":"l"}).encode())
             else:
                 conn.sendall(json.dumps({"state":"ongoing"}).encode())
 def start_server():
