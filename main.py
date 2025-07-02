@@ -1,5 +1,6 @@
 import tkinter as tk
 import random
+import threading
 from datetime import datetime
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -177,6 +178,10 @@ def handle_change(e):
         typeentry.config(fg="red")
 
 
+def open_compete():
+    centry.config(bg="lightgray")
+    raise_frame(competecontent)
+
 def open_practice():
     global ranlets
     global counter
@@ -229,6 +234,22 @@ def start_practice():
         typeentry.after(1000, record)
     record()
 
+competecontent = tk.Frame(root, background="white", height=500, width=500)
+competecontent.pack_propagate(False)
+competecontent.pack()
+competecontent.place(x=0, y=0)
+cwords = tk.Label(competecontent, text="Connecting to server...",
+                 background="white", font=("Arial", 20), wraplength=300)
+cwords.place(relx=0.5, rely=0.24, anchor="center", width=300)
+centry = tk.Text(competecontent,
+                    font=('Arial', 15), borderwidth=2)
+centry.place(relx=0.5, rely=0.51, anchor="center", width=300, height=100)
+centry.config(state="disabled", wrap="word")
+centry.bind('<Control-v>', lambda _: 'break')
+centry.bind('<Control-c>', lambda _: 'break')
+centry.bind('<BackSpace>', lambda _: 'break')
+centry.bind('<KeyPress>', handle_change)
+
 
 practicecontent = tk.Frame(root, background="white", height=500, width=500)
 root.resizable(False, False)
@@ -276,7 +297,7 @@ practice = tk.Button(maincontent, text="Practice",
                      background="lightgray", font=("Arial", 16), command=open_practice)
 practice.place(relx=0.5, rely=0.44, anchor="center", width=180, height=40)
 compete = tk.Button(maincontent, text="Compete",
-                    background="lightgray", font=("Arial", 16))
+                    background="lightgray", font=("Arial", 16),command=open_compete)
 compete.place(relx=0.5, rely=0.53, anchor="center", width=180, height=40)
 leaderboard = tk.Button(maincontent, text="Leaderboard",
                         background="lightgray", font=("Arial", 16))

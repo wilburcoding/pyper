@@ -11,12 +11,11 @@ s.connect((HOST, PORT))
 
 #sent test message every second just for some testing (for now)
 import time
-
 s.sendall(json.dumps({"type": "join"}).encode())
 while True:
   data = s.recv(1024)
   print(f"Received {data!r}")
   dat = json.loads(data.decode())
   if (dat["state"] == "play" and dat["countdown"] == 55):
-    s.sendall(json.dumps({"type": "res", "name":str(random.randint(1,10)), "speed":str(random.randint(1,10))}).encode())
+    s.sendall(json.dumps({"type": "res", "name":str(random.randint(1,1000)), "speed":str(random.randint(1,10))}).encode())
   

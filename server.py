@@ -28,14 +28,13 @@ def handle_client(conn, addr):
 
             if (jdat["type"] == "join" and (game["state"] == "wait" or game["state"] == "countdown")):
               conns.append(conn)
-
               pass
             elif (jdat["type"] == "res"):
                 # game result
-                game["results"][jdat["name"]] = jdat["speed"]
+                game["results"][jdat["id"]] = {"speed":jdat["speed"], "name":jdat["name"]}
                 pass
-            # conn.sendall(json.dumps({"res": data.decode()}).encode()) 
-            # print(f"Sent to {addr}: {data.decode()}")
+            else:
+                conn.sendall(json.dumps({"type":"ongoing"}).encode())
 def start_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
@@ -73,6 +72,8 @@ def manage():
                 game["state"] = "results"
                 countdown = 15
             else:
+              if (countdown % 15 == 0):
+                  print("Countdown: " + str(countdown))
               countdown-=1
         elif (game["state"] == "results"):
             if (countdown == 0):
